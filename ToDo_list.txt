@@ -1,0 +1,102 @@
+https://medium.com/front-end-weekly/understand-the-factory-design-pattern-in-plain-javascript-20b348c832bd
+
+For the new model
+
+Use this pattern
+
+define Frequalizer as class factory
+
+add data and methods to the factory setter and getters
+add an initialise method to set all the data for the frequalizer
+so we initialize the frequelizer and then set the values of the individual fields on the ui based upon the model
+
+so process is
+
+Init
+ - load values
+	- set individual value
+ - set display values
+ 
+Load Preset
+ - choose preset values
+ - call Init
+ 
+Change value
+  - set individual value
+ 
+Frequency Set
+ - This will need to be a special case
+ 
+
+NB it may be possible that the frequalizer is not really needed; as in Inguz it is used for the graph. 
+
+But without it you can update the controls directly.
+ 
+---------------
+
+Initialise
+ Given  I first load the Inguz page
+ When I will read in all the Lists
+ And I will read in all the data
+ Then I will refresh all the list controls
+ And I will refresh all the data values
+ And I will refresh all the EQ values
+ 
+ 
+Change Bands 
+ Given I change the EQ Band
+ When I Save the Number of Bands
+ Then I will read in all the data
+ And I will refresh all the EQ values
+ 
+ 
+Load Preset
+  Given I select a Preset
+  When I save the Value
+  And I copy the Preset to the Save Preset field
+  Then I will read in all the data
+  And I will refresh all the data values
+  And I will refresh all the EQ values	
+  	
+Save a Preset
+  Given I save a preset
+  When I save the Value
+  Then I add the new Preset to the Dropdown
+  Then I display a Save Message
+
+
+Select a Filter
+ Given I select a filter
+ When I save the Value
+ Then I display a Save Message
+
+Change an EQ Band
+ Given I have amended an EQ Band
+ When I save the EQ Band 
+ 
+ 
+ --------------------------
+ replace -> onmousedown
+ with --> onpointerdown
+ 
+ Add in style formatting: below
+ 
+ input[type=range] {
+  pointer-events: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  pointer-events: auto;
+}
+
+input[type=range]::-moz-range-thumb {
+  pointer-events: auto;
+}
+
+input[type=range]::-ms-thumb {
+  pointer-events: auto;
+}
+ 
+ 
+ 
+ 
