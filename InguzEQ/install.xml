@@ -5,9 +5,9 @@
   <module>Plugins::InguzEQ::Plugin</module>
   <version>0.9.34</version>
 
-  <creator>Inguz Audio</creator>
-  <email>hpyle@inguzaudio.com</email>
-  <homepageURL>http://inguzaudio.com/</homepageURL>
+  <creator>Inguz Audio/Jonathan Fox</creator>
+  <email></email>
+  <homepageURL>https://github.com/Foxenfurter?tab=repositories</homepageURL>
         
   <id>B2097381-C0A6-4fac-834E-652E7714FDDA</id>
   <optionsURL>plugins/InguzEQ/index.html</optionsURL>
@@ -17,6 +17,6 @@
   <targetApplication>
   <id>SqueezeCenter</id>
    <minVersion>7.3.0</minVersion>
-   <maxVersion>9.*</maxVersion>
+   <maxVersion>*</maxVersion>
   </targetApplication>
 </extension>
