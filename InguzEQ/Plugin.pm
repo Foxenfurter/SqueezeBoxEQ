@@ -473,7 +473,8 @@ sub initPlugin
 	else
 	{
 		# debian, redhat, and everything else
-		$appdata = '/usr/local/slimserver/prefs';
+		$appdata = '/usr/share';
+		#$appdata = '/usr/local/slimserver/prefs';
 	}
 
 	# Make sure our appdata directory exists, if at all possible
