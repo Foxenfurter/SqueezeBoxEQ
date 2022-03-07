@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<extensions>
+  <details>
+    <title lang="EN">Inguz-EQ</title>
+  </details>
+  <plugins>
+    <plugin name="InguzEQ" version="0.9.34" minTarget="7.3.0" maxTarget="*">
+      <title lang="EN">InguzEQ</title>
+      <desc lang="EN">DSP for Squeezebox server based of Inguz</desc>
+
+      <url>https://github.com/Foxenfurter/SqueezeBoxEQ/raw/main/InguzEQ.zip</url>
+      <sha>aa572ad3e8f34ff5daf219de18178d5f133f5807</sha>
+      <creator>Hugh Pyle, Jonathan Fox</creator>
+    </plugin>
+  </plugins>
+</extensions>
