@@ -8,8 +8,8 @@
       <title lang="EN">SqueezeBoxEQ</title>
       <desc lang="EN">DSP for Squeezebox server based of Inguz</desc>
 
-      <url>https://github.com/Foxenfurter/SqueezeBoxEQ/raw/main/InguzEQ.zip</url>
-      <sha>dddf2d415b18c9c75121ba801ab0423f6bc64801</sha>
+      <url>https://github.com/Foxenfurter/SqueezeBoxEQ/raw/main/SqueezeBoxEQ.zip</url>
+      <sha>3173fd39b5adff1cf0edf9069b6cd80def2e2ece</sha>
       <creator>Jonathan Fox</creator>
     </plugin>
   </plugins>
