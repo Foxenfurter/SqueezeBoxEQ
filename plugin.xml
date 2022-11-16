@@ -9,7 +9,8 @@
       <desc lang="EN">DSP for Squeezebox server based of Inguz</desc>
 
       <url>https://github.com/Foxenfurter/SqueezeBoxEQ/raw/main/SqueezeboxEQ.zip</url>
-      <sha>60aeb482358a41d2a4de44f65e727330cd3e3904</sha>
+      <sha-old>60aeb482358a41d2a4de44f65e727330cd3e3904</sha-old>
+      <sha>29427ae6c73b4113792b97059c537af8</sha>
       <creator>Jonathan Fox</creator>
     </plugin>
   </plugins>
