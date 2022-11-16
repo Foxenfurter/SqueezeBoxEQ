@@ -1,142 +1,158 @@
 package Plugins::InguzEQ::Plugin;
-# ----------------------------------------------------------------------------
-# InguzEQ\Plugin.pm - a SlimServer plugin.
-# Makes a remote-control user interface, and writes settings files, which
-# provide parameters for operation of a convolution and filter engine.
-#
-# This file is licensed to you under the terms below.  If you received other
-# files as part of a package containing this file, each might have different
-# license terms.  If you do not accept the terms, do not use the software.
-#
-# Copyright (c) 2006-2012 by Hugh Pyle, inguzaudio.com, and contributors.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-# IN THE SOFTWARE.
-# ----------------------------------------------------------------------------
-#
-# todo (TBD):
-# 	web html5, ditch silverlight
-# 	web silverlight animated "loading" thing
-# 	web "extra text" on values (flat, etc)
-# 	jive EQ adjust frequency (later, when we have a bar... radiobuttons would be too clunky)
-# 	jive SigGen adjust frequency (ditto)
-# 	jive titlebar icon?
-# 	anything else marked TBD
-#
-#
-# Revision history:
-#
-# JB's edits
-# 20181212			added aac, mp4 filetypes
-# 					corrected alc filetype to work with later versions of LMS
-# 					deleted aap entry - replaced with aac entry
-# 					added spt entry for Spotty (spotify plugin)
-# 					changed FLAC compression levels to 0 (were 5)
-# 					(very little lost in size but 0 takes significantly less time to encode)
-#
-# 20170805			Warning: Using a hash as a reference is deprecated at 3138
-# 					L3138 $request->addResultLoop( 'Points_loop', $cnt, $ff, %h->{$ff} );
-# 					changed %h->{$ff} to $h{$ff}
-#
-# High Pyle's revisions start here
-# 0.9.33   20120101   encode with flac -5, CPU is cheap now
-#          20110601   Merge contrib from do0g
-# 0.9.30   20090105   SqueezeCenter 7.3 support
-#                     add UHJ filetype
-#                     remove SHN support
-#                     add seek (for WAV and similar)
-# 0.9.29   20081130   SqueezeCenter 7.2.1 support
-#                     fix amb RotateZ serialization
-# 0.9.28   20080412   SqueezeCenter version
-#                     add CLI
-#                     add Jive UI
-#                     add web/silverlight UI
-#                     add ambisonic UI stuff
-#                     balance, width to 9dB; all incr 0.1dB
-#                     lists sort case insensitively
-#                     add sweep(short)
-#                     add .aap (http://wiki.slimdevices.com/index.cgi?AACplus)
-#                     fix 'save preset'
-#                     fix flatness 0 written as 10
-#                     restart track immediately when changing test-signal type
-# 0.9.27   20070930   no change
-# 0.9.25   20070916   add stereo pink noise test signals
-#                     better save-presets default (patch from Toby)
-#                     add -wavo for all FLAC transcodes, mostly for spdif
-# 0.9.24   20070812   add -wav for [alac]
-#                     Register the .amb type properly (6.5)
-# 0.9.23   20070625   Fix large-size Adjust menu
-#                     Add current-values to menus
-#                     Add .amb support (Ambisonics B-format)
-# 0.9.22   20070514   Fix compatibility with SlimServer 6.3.1 (again)
-#                     Fix bad savePrefs bug
-# 0.9.21   20070506   Sweep-with-EQ: separate versions for left and right
-#                     move convert.conf to plugin dir for easier uninstall
-#                     adjustable frequency centers for each EQ band
-#                     fix the HASH(...) bug when loading from empty xml
-#                     more robustness when loading presets/settings
-#                     report cause of fatal errors when upgrading etc
-# 0.9.20   20070422   remove non-band-limited signal generator functions
-# 0.9.18   20070314   skew +/-25 samples, increase from 12
-#                     signal generator: EQ'd versions, channel ident
-#                     signal generator: editable frequency
-# 0.9.16   20070311   Fix compatibility with SlimServer 6.3.1
-# 0.9.15   20070310   Add signal-generator mode
-#                     Put the source formatting back
-#                     Miscellaneous tweaks
-# 0.9.13   20070113   Fix & test the APE, Ogg and MusePack file types
-# 0.9.12   20070113   Add linux support (debian, redhat)
-# 0.9.11   20070101   Nice graphical button overlay
-#                     Don't show the Flatness menu unless a room-correction
-#                       filter has been selected (it's a no-op)
-#                     Add matrix/width controls
-#                     Add balance/skew controls
-#                     Move equalizer type onto its own submenu
-#                     Better defaults for first-time use
-#                     Source formatting: fewer tabs
-# 0.9.10   20061106   Fix non-44100 bitrates (SlimServer 6.5 or greater
-#                       only), otherwise they play too fast or too slow
-#                     Fix the AIFF filetype
-#                     Fix the ALC (apple lossless) filetype
-# 0.9.9    20060930   Use the $RATE$ flag to pass thru samplerate for 6.5
-#                       and above
-#                     Fix the WAV source type (for arbitrary wav files)
-#                     Fix for mov123 (big-endian output)
-# 0.9.8    20060811   Send WAV not FLAC to softsqueeze and SB1 clients
-#                     Make menus' last-used-position stickier
-# 0.9.7    20060730   Add 'flatness' control
-# 0.9.6    20060716   Transcode to FLAC24 to avoid losing any dynamic range
-# 0.9.5    20060603   Beta release under MIT-style free software license
-#
-#
-
+=pod version history
+	# ----------------------------------------------------------------------------
+	# InguzEQ\Plugin.pm - a SlimServer plugin.
+	# Makes a remote-control user interface, and writes settings files, which
+	# provide parameters for operation of a convolution and filter engine.
+	#
+	# This file is licensed to you under the terms below.  If you received other
+	# files as part of a package containing this file, each might have different
+	# license terms.  If you do not accept the terms, do not use the software.
+	#
+	# Copyright (c) 2006-2012 by Hugh Pyle, inguzaudio.com, and contributors.
+	#
+	# Permission is hereby granted, free of charge, to any person obtaining a
+	# copy of this software and associated documentation files (the "Software"),
+	# to deal in the Software without restriction, including without limitation
+	# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+	# and/or sell copies of the Software, and to permit persons to whom the
+	# Software is furnished to do so, subject to the following conditions:
+	#
+	# The above copyright notice and this permission notice shall be included in
+	# all copies or substantial portions of the Software.
+	#
+	# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+	# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+	# IN THE SOFTWARE.
+	# ----------------------------------------------------------------------------
+	#
+	# todo (TBD):
+	# 	web html5, ditch silverlight
+	# 	web silverlight animated "loading" thing
+	# 	web "extra text" on values (flat, etc)
+	# 	jive EQ adjust frequency (later, when we have a bar... radiobuttons would be too clunky)
+	# 	jive SigGen adjust frequency (ditto)
+	# 	jive titlebar icon?
+	# 	anything else marked TBD
+	#
+	#
+	# Revision history:
+	# 0.9.46
+	# JF 2022-11		Remove real old code, relating to 9_2_1 versions and earlier.
+	#					Removed settings for server pre 7.3
+	#					changed plugin location for settings to be in plugin prefs folder
+	#					copy application binary to plugin path	
+	#					changed location of binary so that is auto-detected 
+	#					added code for setting executable status to binary if not windows
+	#					fixed issues with generating custom.conf - no more additional white lines
+	#					fixed issue where re-boot required on regeneration of custom.conf
+	
+						
+	# JF 2020-03		Removed references to Silverlight - and added in new SL freed stuff
+	# JB's edits
+	# 20181212			added aac, mp4 filetypes
+	# 					corrected alc filetype to work with later versions of LMS
+	# 					deleted aap entry - replaced with aac entry
+	# 					added spt entry for Spotty (spotify plugin)
+	# 					changed FLAC compression levels to 0 (were 5)
+	# 					(very little lost in size but 0 takes significantly less time to encode)
+	#
+	# 20170805			Warning: Using a hash as a reference is deprecated at 3138
+	# 					L3138 $request->addResultLoop( 'Points_loop', $cnt, $ff, %h->{$ff} );
+	# 					changed %h->{$ff} to $h{$ff}
+	#
+	# High Pyle's revisions start here
+	# 0.9.33   20120101   encode with flac -5, CPU is cheap now
+	#          20110601   Merge contrib from do0g
+	# 0.9.30   20090105   SqueezeCenter 7.3 support
+	#                     add UHJ filetype
+	#                     remove SHN support
+	#                     add seek (for WAV and similar)
+	# 0.9.29   20081130   SqueezeCenter 7.2.1 support
+	#                     fix amb RotateZ serialization
+	# 0.9.28   20080412   SqueezeCenter version
+	#                     add CLI
+	#                     add Jive UI
+	#                     add web/silverlight UI
+	#                     add ambisonic UI stuff
+	#                     balance, width to 9dB; all incr 0.1dB
+	#                     lists sort case insensitively
+	#                     add sweep(short)
+	#                     add .aap (http://wiki.slimdevices.com/index.cgi?AACplus)
+	#                     fix 'save preset'
+	#                     fix flatness 0 written as 10
+	#                     restart track immediately when changing test-signal type
+	# 0.9.27   20070930   no change
+	# 0.9.25   20070916   add stereo pink noise test signals
+	#                     better save-presets default (patch from Toby)
+	#                     add -wavo for all FLAC transcodes, mostly for spdif
+	# 0.9.24   20070812   add -wav for [alac]
+	#                     Register the .amb type properly (6.5)
+	# 0.9.23   20070625   Fix large-size Adjust menu
+	#                     Add current-values to menus
+	#                     Add .amb support (Ambisonics B-format)
+	# 0.9.22   20070514   Fix compatibility with SlimServer 6.3.1 (again)
+	#                     Fix bad savePrefs bug
+	# 0.9.21   20070506   Sweep-with-EQ: separate versions for left and right
+	#                     move convert.conf to plugin dir for easier uninstall
+	#                     adjustable frequency centers for each EQ band
+	#                     fix the HASH(...) bug when loading from empty xml
+	#                     more robustness when loading presets/settings
+	#                     report cause of fatal errors when upgrading etc
+	# 0.9.20   20070422   remove non-band-limited signal generator functions
+	# 0.9.18   20070314   skew +/-25 samples, increase from 12
+	#                     signal generator: EQ'd versions, channel ident
+	#                     signal generator: editable frequency
+	# 0.9.16   20070311   Fix compatibility with SlimServer 6.3.1
+	# 0.9.15   20070310   Add signal-generator mode
+	#                     Put the source formatting back
+	#                     Miscellaneous tweaks
+	# 0.9.13   20070113   Fix & test the APE, Ogg and MusePack file types
+	# 0.9.12   20070113   Add linux support (debian, redhat)
+	# 0.9.11   20070101   Nice graphical button overlay
+	#                     Don't show the Flatness menu unless a room-correction
+	#                       filter has been selected (it's a no-op)
+	#                     Add matrix/width controls
+	#                     Add balance/skew controls
+	#                     Move equalizer type onto its own submenu
+	#                     Better defaults for first-time use
+	#                     Source formatting: fewer tabs
+	# 0.9.10   20061106   Fix non-44100 bitrates (SlimServer 6.5 or greater
+	#                       only), otherwise they play too fast or too slow
+	#                     Fix the AIFF filetype
+	#                     Fix the ALC (apple lossless) filetype
+	# 0.9.9    20060930   Use the $RATE$ flag to pass thru samplerate for 6.5
+	#                       and above
+	#                     Fix the WAV source type (for arbitrary wav files)
+	#                     Fix for mov123 (big-endian output)
+	# 0.9.8    20060811   Send WAV not FLAC to softsqueeze and SB1 clients
+	#                     Make menus' last-used-position stickier
+	# 0.9.7    20060730   Add 'flatness' control
+	# 0.9.6    20060716   Transcode to FLAC24 to avoid losing any dynamic range
+	# 0.9.5    20060603   Beta release under MIT-style free software license
+	#
+	#
+=cut
 
 use strict;
 use base qw(Slim::Plugin::Base);
 use Slim::Utils::Misc;
+use Slim::Utils::OSDetect;
 use File::Spec::Functions qw(:ALL);
 use File::Path;
+use File::Copy;
 use FindBin qw($Bin);
 use XML::Simple;
-use JSON::XS qw(from_json);
+use JSON::XS qw(decode_json);
 use Data::Dumper;
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
+
+use Slim::Player::TranscodingHelper;
 
 use Plugins::InguzEQ::Settings;
 
@@ -146,14 +162,13 @@ use Plugins::InguzEQ::Settings;
 	}
 }
 
-
 # ------ names and versions ------
 
 # Revision number.
 # Anytime the revision number is incremented, the plugin will rewrite the
 # slimserver-convert.conf, requiring restart.
 #
-my $revision = "0.9.34";
+my $revision = "0.9.46";
 use vars qw($VERSION);
 $VERSION = $revision;
 
@@ -161,6 +176,7 @@ $VERSION = $revision;
 #
 my $thistag = "inguzeq";
 my $thisapp = "InguzEQ";
+my $binary;
 my $settingstag = "InguzEQSettings";
 my $confBegin = "inguzeq#begin";
 my $confEnd = "inguzeq#end";
@@ -199,7 +215,7 @@ my $AMBROTATEXKEY = "XR3";
 # the command inserted in custom-convert.conf
 #
 my $convolver = "InguzDSP";
-
+my $configPath = "";
 
 # ------ equalization channel stuff ------
 
@@ -258,7 +274,25 @@ sub keyval
 sub debug
 {
 	my $txt = shift;
-	$log->info("InguzEQ: " . $txt . "\n");
+	$log->info( $thisapp .": " . $txt . "\n");
+	#Putting an error here for easier debug
+	#$log->error( "Fox: " .  $txt . "\n" );
+}
+
+
+sub oops
+{
+	my ( $client, $desc, $message ) = @_;
+	$log->warn( "oops: " . $desc . ' - ' . $message );
+	$client->showBriefly( { line => [ $desc, $message ] } , 2);
+}
+
+sub fatal
+{
+	my ( $client, $desc, $message ) = @_;
+	$log->error( "fatal: " . $desc . ' - ' . $message );
+	$client->showBriefly( { line => [ $desc, $message ] } , 2);
+	$fatalError = $message;
 }
 
 # Format a value (bass level -> "+3dB", etc)
@@ -310,7 +344,6 @@ sub valuelabel
 		$labl = '';
 		$extra = '';
 	}
-#	debug( 'valuelabel(' . $item . ')=' . $sign . $valu . $labl . $extra );
 	return $sign . $valu . $labl . $extra;
 }
 
@@ -395,15 +428,6 @@ sub defaultFreqs
 	return @bandfreqs;
 }
 
-sub oldConfigPath
-{
-	# Before 0.9.21, and also for 6.3.1 slimserver, config file is slimserver-convert.conf
-	my @dirs = Slim::Utils::OSDetect::dirsFor('convert');
-	my $configPath = catdir( $dirs[0], 'slimserver-convert.conf' );
-	debug( "Old CP:" . $configPath );
-	return $configPath;
-}
-
 sub newConfigPath
 {
 	my @rootdirs = Slim::Utils::PluginManager::dirsFor($thisapp,'enabled');
@@ -413,11 +437,58 @@ sub newConfigPath
 		{
 			my $cp = catdir( $d, 'custom-convert.conf' );
 			debug( "New CP:" . $cp );
+			
 			return $cp;
 		}
 	}
-	return oldConfigPath();
+	fatal ("can't find directory with custom-convert.conf");
+	return;
 }
+
+#Setup path to Binary - may need to compile more versions to support this
+sub binaries {
+	my $os = Slim::Utils::OSDetect::details();
+	
+	if ($os->{'os'} eq 'Linux') {
+
+		if ($os->{'osArch'} =~ /x86_64/) {
+			return qw(/publishLinux-x64/InguzDSP );
+		}
+		if ($os->{'binArch'} =~ /i386/) {
+			return qw(/publishLinux-x86/InguzDSP);
+		}
+		if ($os->{'osArch'} =~ /aarch64/) {
+			return qw(/publishlinux-arm64/InguzDSP) ;
+		}
+		if ($os->{'binArch'} =~ /armhf/) {
+			return qw( /publishlinux-arm/InguzDSP );
+		}
+		if ($os->{'binArch'} =~ /arm/) {
+			return qw( /publishlinux-arm/InguzDSP );
+		}
+		
+		# fallback to offering all linux options for case when architecture detection does not work
+		return qw( /publishLinux-x86/InguzDSP );
+	}
+	
+	if ($os->{'os'} eq 'Unix') {
+	
+		if ($os->{'osName'} =~ /freebsd/) {
+			return qw( /publishLinux-x64/InguzDSP );
+		}
+		
+	}	
+	
+	if ($os->{'os'} eq 'Darwin') {
+		return qw(/publishOsx-x64/InguzDSP );
+	}
+		
+	if ($os->{'os'} eq 'Windows') {
+		return qw(\publishWin32\InguzDSP.exe);
+	}	
+	
+}
+
 
 
 # ------ slimserver delegates and initialization ------
@@ -464,19 +535,25 @@ sub initPlugin
 	Slim::Control::Request::addDispatch([$thistag . '.ambimenu', '_index', '_quantity'],     [1, 1, 1, \&ambimenuCommand]);		# amb settings sub-menu for Jive
 
 	my $appdata;
-	if(Slim::Utils::OSDetect::OS() eq 'win')
-	{
-		# Application data lives in a folder under \Documents and Settings\All Users\Application Data\
-		# (plugin may not always have write access to \Program Files\SqueezeCenter\Plugins\)
-		$appdata = Win32::GetFolderPath(0x0023); # 0x0023 is Win32::CSIDL_COMMON_APPDATA, but on linux that breaks for some reason
-	}
-	else
-	{
-		# debian, redhat, and everything else
-		$appdata = '/usr/share';
-		#$appdata = '/usr/local/slimserver/prefs';
-	}
+	#This is where preferences are stored.
+=begin mhereger suggested changing this to a folder installed on the plugin path.
 
+	 
+	 if(Slim::Utils::OSDetect::OS() eq 'win')
+	 {
+		# # Application data lives in a folder under \Documents and Settings\All Users\Application Data\
+		# # (plugin may not always have write access to \Program Files\SqueezeCenter\Plugins\)
+		 $appdata = Win32::GetFolderPath(0x0023); # 0x0023 is Win32::CSIDL_COMMON_APPDATA, but on linux that breaks for some reason
+	 }
+	 else
+	 {
+		# # debian, redhat, and everything else
+		 $appdata = '/usr/share';
+		# #$appdata = '/usr/local/slimserver/prefs';
+	 }
+=cut	
+
+    $appdata = Slim::Utils::Prefs::dir();
 	# Make sure our appdata directory exists, if at all possible
 	# Note: linux requires this already created, with owner slimserver
 	$pluginDataDir = catdir( $appdata, $thisapp );
@@ -497,7 +574,37 @@ sub initPlugin
 
 	$pluginTempDataDir = catdir( $pluginDataDir, 'Temp' );
 	mkdir( $pluginTempDataDir );
-
+		
+	my $bin = $class->binaries;
+	debug( "Fox plugin path: " . $bin . " binary" );
+	my $exec = catdir(Slim::Utils::PluginManager->allPlugins->{$thisapp}->{'basedir'}, 'Bin', $bin);
+	debug( "Fox plugin path: " . $exec . " exec" );
+	#extension is only used for windows
+	my $binExtension = ".exe";
+	# set extension for windows
+	if (Slim::Utils::OSDetect::details()->{'os'} ne 'Windows') {
+		$binExtension = ""	;
+	}		
+	if (!-e $exec) {
+		$log->warn("$exec not executable");
+		return;
+	}
+	#derive standard binary path
+	$bin = catdir(Slim::Utils::PluginManager->allPlugins->{$thisapp}->{'basedir'}, 'Bin',"/", $convolver . $binExtension);
+	debug('standard binary path: ' . $bin);
+	# copy correct binary into bin folder unless it already exists
+	unless (-e $bin) {
+		debug('copying binary' . $exec );
+		copy( $exec , $bin)  or die "copy failed: $!";
+		#we know only windows has an extension, now set the binary
+		if ( $binExtension == "") {
+				debug('executable not having \'x\' permission, correcting');
+				chmod (0555, $bin);
+				
+		}	
+	}
+	
+	
 	# Subscribe to player connect/disconnect messages
 	Slim::Control::Request::subscribe(
 		\&clientEvent,
@@ -539,21 +646,6 @@ sub clientEvent {
 }
 
 
-sub oops
-{
-	my ( $client, $desc, $message ) = @_;
-	$log->warn( "oops: " . $desc . ' - ' . $message );
-	$client->showBriefly( { line => [ $desc, $message ] } , 2);
-}
-
-sub fatal
-{
-	my ( $client, $desc, $message ) = @_;
-	$log->error( "fatal: " . $desc . ' - ' . $message );
-	$client->showBriefly( { line => [ $desc, $message ] } , 2);
-	$fatalError = $message;
-}
-
 sub initConfiguration
 {
 	# called when a client first appears
@@ -568,7 +660,6 @@ sub initConfiguration
 	my $prevrev = $prefs->client($client)->get( 'version' ) || '0.0.0.0';
 
 	# For SlimServer 6.5 and later: conf file is "custom-convert.conf" in the plugin's folder.
-	# For SlimServer 6.3, it's "slimserver-convert.conf" in $bin.
 	# Write this .conf with sections for every client
 	# (because the convolver needs clientID as parameter)
 	# (and because different clients can have different transcode rules, eg SB1 doesn't understand FLAC)
@@ -584,65 +675,14 @@ sub initConfiguration
 	my @clientIDs = sort map { $_->id() } Slim::Player::Client::clients();
 	my @foundClients;
 
-	# Is there an existing slimserver-convert.conf in $Bin?
-	my $configPath = oldConfigPath();
+	#All this crap is related to moving a config location
+
 
 	# Pre... flag used to upgrade the prefs format.
 	my $PRE_0_9_21 = 0;
 	my $tryMoveConfig = 0;
-	if( -f $configPath )
-	{
-		$PRE_0_9_21 = 1;
-		$tryMoveConfig = 1;
-	}
-		
-	if( $tryMoveConfig )
-	{
-		# As of plugin 0.9.21 we've moved to the Plugins/InguzEQ directory
-		# so let's see if this one can be deleted
-
-		open( OLDCONFIG, "$configPath" ) || do { fatal( $client, undef, "Can't read from $configPath" ); return 0; };
-		@origLines = <OLDCONFIG>;
-		close( OLDCONFIG );
-
-		my $reWrite = 0;
-		my $canDelete = 1;
-		my $oldBlock = 0;
-		foreach( @origLines )
-		{
-			my $ignore = 0;
-			if( m/^\s*$/ ) {$ignore = 1;}
-			if( m/# Modified by $thisapp/i ) {$ignore = 1;}
-			if( m/#$confBegin#/i ) {$oldBlock = 1; $reWrite = 1;}
-			if( m/#$confEnd#/i ) {$oldBlock = 0; $ignore = 1; $reWrite = 1;}
-			next if( $ignore || $oldBlock );
-			$canDelete = 0;
-			last if $reWrite;
-		}
-		
-		if($canDelete)
-		{
-			debug( "deleting old " . $configPath );
-			unlink( $configPath )  || do { fatal( $client, undef, "Can't delete old $configPath" ); return 0; };
-		}
-		elsif( $reWrite )
-		{
-			debug( "rewriting old " . $configPath );
-			open( OUT, ">$configPath" ) || do { fatal( $client, undef, "Can't write to $configPath" ); return; };
-			my $now = localtime;
-			print OUT "# Modified by $thisapp, $now: moved to plugin folder\n";
-			my $copying = 1;
-			foreach ( @origLines )
-			{
-				my $ignore = 0;
-				$ignore = 1 if m/# Modified by $thisapp/i;
-				$copying = 0 if m/#$confBegin#/i;
-				print OUT if $copying && !$ignore;
-				$copying = 1 if m/#$confEnd#/i;
-			}
-		}
-	}
 	
+
 	# Is there an existing transcode configuration file?
 	@origLines = ();
 	$configPath = newConfigPath();
@@ -668,25 +708,29 @@ sub initConfiguration
 					my $vert = shift( @test ) || 0;
 					next if $vert == $ver;  # file is same version as me
 					last if $vert > $ver;  # file is later than me
+					debug ("Script version higher than config: " . $ver . " - " . $vert );
 					$upgradeReason = "Previous version $1 less than my $revision ($vert less than $ver)" unless $needUpgrade;
 					$needUpgrade = 1;
 					last;
 				}
 				push( @foundClients, $2 );
 			}
-#			last if $needUpgrade;
+        #continue looping through as otherwise we bale as soon as the version is read			
+        #	last if $needUpgrade;
 		}
 		@foundClients = sort @foundClients;
-
-#		unless( $needUpgrade )
-#		{
+		# original code don't need to do this if we need and upgrade
+		unless( $needUpgrade )
+		{
 			for my $c (@clientIDs)
 			{
 				my $ok = 0;
+				#loop through all the found clients vs clients
 				for my $cc (@foundClients)
 				{
 					if( $c eq $cc )
 					{
+						#if found client matches a client
 						$ok = 1;
 						last;
 					}
@@ -695,15 +739,17 @@ sub initConfiguration
 				{
 					$upgradeReason = "Client $c was not yet registered" unless $needUpgrade;
 					$needUpgrade = 1;
+					debug ("Client $c was not yet registered" );
 					push( @foundClients, $c );
-#					last;
+					last;
 				}
 			}
-#		}
+		}
 	}
 	else
 	{
 		# Need to create the config file from scratch
+		debug ("Config Not found, new one created" );
 		$upgradeReason = "New configuration" unless $needUpgrade;
 		$needUpgrade = 1;
 		@foundClients = @clientIDs;
@@ -725,10 +771,11 @@ sub initConfiguration
 	my $copying = 1;
 	foreach ( @origLines )
 	{
-		$copying = 0 if m/#$confBegin#/i;
-		print OUT if $copying;
-		$copying = 1 if m/#$confEnd#/i;
+		#This should be searching for existing lines containing update reasons - original had a bug which added a lots of blanks based
+		print OUT if m/# Modified by $thisapp/i;
+		
 	}
+	# Add a line to create some white space
 	print OUT "\n";
 
 	foreach my $clientID ( @foundClients )
@@ -745,7 +792,11 @@ sub initConfiguration
 	
 	print OUT "";
 	close( OUT );
-	debug( "Rewrite done, needs restart" );
+	
+	#restart will trigger a re-writeso re-set need upgrade to off.
+	$needUpgrade = 0;
+	my $myRestart = Slim::Player::TranscodingHelper::loadConversionTables();
+	debug( "Reload Conversion Tables" );
 }
 
 
@@ -759,10 +810,6 @@ sub webPages
 	if( Slim::Utils::PluginManager->isEnabled("Plugins::InguzEQ::Plugin") )
 	{
 		Slim::Web::Pages->addPageFunction("plugins/InguzEQ/index.html", \&handleWebIndex);
-	#	Slim::Web::Pages->addPageFunction("plugins/InguzEQ/Silverlight.js", \&handleWebStatic);
-	#	Slim::Web::Pages->addPageFunction("plugins/InguzEQ/Scene.js", \&handleWebStatic);
-	#	Slim::Web::Pages->addPageFunction("plugins/InguzEQ/Model.js", \&handleWebStatic);
-	#	Slim::Web::Pages->addPageFunction("plugins/InguzEQ/Scene.xaml", \&handleWebStatic);
 		Slim::Web::Pages->addPageFunction("plugins/InguzEQ/inguz.png", \&handleWebStatic);
 		Slim::Web::Pages->addPageLinks("plugins", { $class->getDisplayName => 'plugins/InguzEQ/index.html' });
 		Slim::Web::Pages->addPageLinks("icons",   { $class->getDisplayName => 'plugins/InguzEQ/inguz.png' });
@@ -779,15 +826,17 @@ sub handleWebIndex
 	my ( $client, $params ) = @_;
 	if( $client = Slim::Player::Client::getClient($params->{player}) )
 	{
+		return Slim::Web::HTTP::filltemplatefile('plugins/InguzEQ/index.html', $params);
+		#We now no longer need to flash the restart message, because the table is reloaded automatically	
 		# Very first thing: check the config and prefs.
-		if( $needUpgrade==1 )
-		{
-			return Slim::Web::HTTP::filltemplatefile('plugins/InguzEQ/restart.html', $params);
-		}
-		else
-		{
-			return Slim::Web::HTTP::filltemplatefile('plugins/InguzEQ/index.html', $params);
-		}
+		#if( $needUpgrade==1 )
+		#{
+	#		return Slim::Web::HTTP::filltemplatefile('plugins/InguzEQ/restart.html', $params);
+	#	}
+	#	else
+	#	{
+	#		return Slim::Web::HTTP::filltemplatefile('plugins/InguzEQ/index.html', $params);
+	#	}
 	}
 }
 
@@ -1140,56 +1189,7 @@ sub upgradePrefs
 		my $client = Slim::Player::Client::getClient( $clientID );
 		if( defined( $client ) )
 		{
-			if( $PRE_0_9_21 )
-			{
-				# For versions before 0.9.21
-				# - The chosen band values (gain, dB) are stored in slim prefs 'inguzeq-band<X>value' where X is zero thru 8.
-				# - The 0 thru 8 represent the fixed freqs on our scale,
-				#   so with a 2-band UI, that's 'band0value' and 'band8value'.
-				# For later versions:
-				# - the prefs are stored as 'inguzeq-b<X>value' where X is 0 for the first band (whatever its frequency),
-				#   1 for the second band (whatever its frequency), and so on (so allowing an unlimited number of bands if anyone ever wanted)
-				# - there's also a set of 'inguzeq-b<X>freq' values with the center frequencies.
-				#   Of course the center frequencies must be sorted and distinct.
-				my @opts = ();
-				my @frqs = ();
-				my $bandcount = getPref( $client, 'bands' );
-				if( $bandcount==3 )
-				{
-					@opts = ('00', '04', '08');
-					@frqs = @fq3;
-				}
-				elsif( $bandcount==5 )
-				{
-					@opts = ('00', '02', '04', '06', '08');
-					@frqs = @fq5;
-				}
-				elsif( $bandcount==9 )
-				{
-					@opts = ('00', '01', '02', '03', '04', '05', '06', '07', '08');
-					@frqs = @fq9;
-				}
-				else
-				{
-					@opts = ('00', '08');
-					@frqs = @fq2;
-				}
-				my $j = 0;
-				for my $n ( @opts )
-				{
-					debug( $j. "@" . $frqs[$j] . "=" . ( getPref( $client, 'band' . $n . 'value' ) || 0 ) );
-					setPref( $client, 'b' . $j . 'value', ( getPref( $client, 'band' . $n . 'value' ) || 0 ) );
-					setPref( $client, 'b' . $j . 'freq',  $frqs[$j] );
-					$j++;
-				}
-				# Now clean up all the bandNvalue prefs
-				for my $k ( '0', '1', '2', '3', '4', '5', '6', '7', '8', '00', '01', '02', '03', '04', '05', '06', '07', '08' )
-				{
-					delPref( $client, 'band' . $k . 'value' );
-				}
-			}
 
-			# if( $prevrev eq 'x.y.zz' ) { .... }
 			
 			unless( $prevrev eq $revision )
 			{
@@ -2548,8 +2548,6 @@ sub jivePresetsMenu
 Slim::Buttons::Common::addMode( $modePresets, \%noFunctions, \&setPresetsMode );
 
 
-
-
 # ------ Mode: PLUGIN.InguzEQ.RoomCorrection ------
 # Displays menu to select a correction filter.
 # Correction filters are any file in the plugin's Data folder with .WAV file extension.
@@ -3125,7 +3123,7 @@ sub currentQuery
 	}
 
 	# Include the client's "current.json" file if we can
-	# from_json(...)
+	# decode_json(...)
 
 	my $json = catdir( $pluginTempDataDir, join('_', split(/:/, $client->id())) . '.current.json' );
 	open( CURR, "$json" ) || do
@@ -3139,7 +3137,7 @@ sub currentQuery
 	debug( "@jsdata" );
 	eval
 	{
-		my $current = from_json("@jsdata");
+		my $current = decode_json("@jsdata");
 #		debug(Data::Dump::dump($current));
 		$cnt = 0;
 		my @pts = $current->{'Points_loop'};
@@ -3601,33 +3599,21 @@ sub template
 		debug( "template? client " . $clientID . " not defined!" );
 		$template = template_FLAC24();  # bah
 	}
+=pod removed support for pre 7.3 server
+=cut
 	elsif( Slim::Player::Client::contentTypeSupported( $client, 'flc' ) && ( $client->model() ne "softsqueeze" ) )
 	{
-		if( $::VERSION ge '7.3' )
-		{
+		
 			# if the player supports flac, use it
 			# except for softsqueeze, which doesn't decode FLAC24 properly
 			debug( "client " . $clientID . " is " . $client->model() . ", using FLAC24" );
 			$template = template_FLAC24();
-		}
-		else
-		{
-			debug( "client " . $clientID . " is " . $client->model() . ", using FLAC24_pre73" );
-			$template = template_FLAC24_pre73();
-		}
+
 	}
 	else
 	{
-		if( $::VERSION ge '7.3' )
-		{
 			debug( "client " . $clientID . " is " . $client->model() . ", using WAV16" );
 			$template = template_WAV16();
-		}
-		else
-		{
-			debug( "client " . $clientID . " is " . $client->model() . ", using WAV16_pre73" );
-			$template = template_WAV16_pre73();
-		}
 	}
 
 	# Fix up the variable bits
@@ -3652,101 +3638,8 @@ sub template
 }
 
 
-
-# transcode for 16-bit WAV output (for softsqueeze, slimp3?, squeezebox1, etc)
-sub template_WAV16_pre73
-{
-	return <<'EOF1';
-
-aap wav * $CLIENTID$
-	[mplayer] -ac faad -demuxer aac -really-quiet -vc null -vo null -cache 64 -af volume=0,resample=44100:0:1,channels=2 -ao pcm:file=$PIPEOUT$ $FILE$ $PIPENUL$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 16
-
-aif wav * $CLIENTID$
-	[$CONVAPP$] -d 16 -id "$CLIENTID$" -wav -be -input "$FILE$" -r $RATE$
-
-alc wav * $CLIENTID$
-	[alac] $FILE$ | [$CONVAPP$] -d 16 -id "$CLIENTID$" -wav -r $RATE$
-
-mp3 wav * $CLIENTID$
-	[lame] --mp3input --decode -t --silent $FILE$ - - | [$CONVAPP$] -d 16 -id "$CLIENTID$" -r $RATE$
-
-wav wav * $CLIENTID$
-	[$CONVAPP$] -d 16 -id "$CLIENTID$" -wav -input $FILE$ -r $RATE$
-
-amb wav * $CLIENTID$
-	[$CONVAPP$] -d 16 -id "$CLIENTID$" -amb -input $FILE$
-
-uhj wav * $CLIENTID$
-	[$CONVAPP$] -d 16 -id "$CLIENTID$" -wav -input $FILE$
-
-flc wav * $CLIENTID$
-	[flac] -dcs --skip=$START$ --until=$END$ -- $FILE$ | [$CONVAPP$] -wav -d 16 -id "$CLIENTID$" -r $RATE$
-
-ogg wav * $CLIENTID$
-	[sox] -t ogg $FILE$ -t raw -r $RATE$ -c 2 -w -s $-x$ - | [$CONVAPP$] -be -d 16 -id "$CLIENTID$" -r $RATE$
-
-wma wav * $CLIENTID$
-	[wmadec] -r $RATE$ -b 16 -n 2 $FILE$  | [$CONVAPP$] -d 16 -id "$CLIENTID$" -r $RATE$
-
-mpc wav * $CLIENTID$
-	[mppdec] --silent --prev --gain 2 $FILE$ - | [$CONVAPP$] -wav -d 16 -id "$CLIENTID$"
-
-ape wav * $CLIENTID$
-	[mac] $FILE$ - -d | [$CONVAPP$] -d 16 -id "$CLIENTID$" -wav
-
-mov wav * $CLIENTID$
-	[mov123] $FILE$ | [$CONVAPP$] -be -d 16 -id "$CLIENTID$" -r $RATE$
-
-EOF1
-}
-
-
-# transcode for 24-bit FLAC output (sb2, sb3, transporter)
-sub template_FLAC24_pre73
-{
-	return <<'EOF1';
-
-aap flc * $CLIENTID$
-	[mplayer] -ac faad -demuxer aac -really-quiet -vc null -vo null -cache 64 -af volume=0,resample=44100:0:1,channels=2 -ao pcm:file=$PIPEOUT$ $FILE$ $PIPENUL$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-aif flc * $CLIENTID$
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ -be -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-alc flc * $CLIENTID$
-	[alac] $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-mp3 flc * $CLIENTID$
-	[lame] --mp3input --decode --silent $FILE$ - - | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-wav flc * $CLIENTID$
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-amb flc * $CLIENTID$
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ -amb -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-uhj flc * $CLIENTID$
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-flc flc * $CLIENTID$
-	[flac] -dcs --skip=$START$ --until=$END$ -- $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-ogg flc * $CLIENTID$
-	[sox] -t ogg $FILE$ -t raw -r $RATE$ -c 2 -w -s $-x$ - | [$CONVAPP$] -id "$CLIENTID$" -be -wavo -d 24 -r $RATE$ | [flac] -cs -5 --totally-silent -
-
-wma flc * $CLIENTID$
-	[wmadec] -r $RATE$ -b 16 -n 2 $FILE$  | [$CONVAPP$] -id "$CLIENTID$" -wavo -d 24 -r $RATE$ | [flac] -cs -5 --totally-silent -
-
-mpc flc * $CLIENTID$
-	[mppdec] --silent --prev --gain 2 $FILE$ - | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-ape flc * $CLIENTID$
-	[mac] $FILE$ - -d | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -5 --totally-silent -
-
-mov flc * $CLIENTID$
-	[mov123] $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -be -wavo -d 24 -r $RATE$ | [flac] -cs -5 --totally-silent -
-
-EOF1
-}
+=pod remove old squeeze versions pre 7.3
+=cut
 
 # added aac entry (jb)
 # deleted aap entry (jb)
@@ -3756,7 +3649,6 @@ EOF1
 sub template_WAV16
 {
 	return <<'EOF1';
-
 aac wav * $CLIENTID$
 	# IF
 	[faad] -q -w -f 1 $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
@@ -3819,7 +3711,7 @@ wma wav * $CLIENTID$
 
 wvp wav * $CLIENTID$
 	# FT:{START=--skip=%t}U:{END=--until=%v}
-	[wvunpack] $FILE$ -wq $START$ $END$ -o - | [InguzDSP] -id "$CLIENTID$" -wav -d 16
+	[wvunpack] $FILE$ -wq $START$ $END$ -o - | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
 
 EOF1
 }
@@ -3834,7 +3726,6 @@ EOF1
 sub template_FLAC24
 {
 	return <<'EOF1';
-
 aac flc * $CLIENTID$
 	# IF
 	[faad] -q -w -f 1 $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
@@ -3855,14 +3746,9 @@ ape flc * $CLIENTID$
 	# F
 	[mac] $FILE$ - -d | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
 
-flc flc * CommentedOut
-	# FT:{START=--skip=%t}U:{END=--until=%v}
-	[flac] -dcs $START$ $END$ -- $FILE$ | [$CONVAPP$] -id "CommentedOut" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
 flc flc * $CLIENTID$
 	# FRI
 	[flac] -dcs --totally-silent $START$ $END$ -- $FILE$ |  [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
 
 mov flc * $CLIENTID$
 	# FR
