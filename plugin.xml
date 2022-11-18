@@ -4,7 +4,7 @@
     <title lang="EN">Squeeze-EQ</title>
   </details>
   <plugins>
-    <plugin name="InguzEQ" version="0.9.36" minTarget="7.3.0" maxTarget="*">
+    <plugin name="InguzEQ" version="0.9.37" minTarget="7.3.0" maxTarget="*">
       <title lang="EN">SqueezeboxEQ</title>
       <desc lang="EN">DSP for Squeezebox server based of Inguz</desc>
 
