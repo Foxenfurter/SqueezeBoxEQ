@@ -15,7 +15,7 @@
 	  <changes>Upgrade of an old Plugin that should now run on most platforms and proved Equalization and FIR capability.
 	  Installer locations have changed to be compliant with squeezeboxserver conventions
 	  location of sox, which is used for on the fly wav filter rate changes, is set automatically
-	  temp folder is emptied on server restart<changes>
+	  temp folder is emptied on server restart</changes>
     </plugin>
   </plugins>
 </extensions>
