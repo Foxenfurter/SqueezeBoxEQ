@@ -41,6 +41,8 @@ package Plugins::InguzEQ::Plugin;
 	#
 	#
 	# Revision history:
+	# 0.9.47			Amended Flac Conv to allow seek -
+	#					split templates into separate versioned file; updates are now based off this.
 	# 0.9.46
 	# JF 2022-11		Remove real old code, relating to 9_2_1 versions and earlier.
 	#					Removed settings for server pre 7.3
@@ -156,6 +158,8 @@ use Slim::Player::TranscodingHelper;
 
 use Plugins::InguzEQ::Settings;
 
+use Plugins::InguzEQ::TemplateConfig;
+
 {
 	if($^O =~ /Win32/) {
 		require Win32;
@@ -168,7 +172,7 @@ use Plugins::InguzEQ::Settings;
 # Anytime the revision number is incremented, the plugin will rewrite the
 # slimserver-convert.conf, requiring restart.
 #
-my $revision = "0.9.46";
+my $revision = "0.9.47";
 use vars qw($VERSION);
 $VERSION = $revision;
 
@@ -216,6 +220,10 @@ my $AMBROTATEXKEY = "XR3";
 #
 my $convolver = "InguzDSP";
 my $configPath = "";
+#use the revision number from the config file
+my $myconfigrevision = get_config_revision();
+	
+
 
 # ------ equalization channel stuff ------
 
@@ -276,7 +284,7 @@ sub debug
 	my $txt = shift;
 	$log->info( $thisapp .": " . $txt . "\n");
 	#Putting an error here for easier debug
-	$log->error( "Fox: " .  $txt . "\n" );
+	#$log->error( "Fox: " .  $txt . "\n" );
 }
 
 
@@ -716,7 +724,7 @@ sub initConfiguration
 	# in case we need to upgrade the prefs store (for this client)
 	#
 	my $prevrev = $prefs->client($client)->get( 'version' ) || '0.0.0.0';
-
+	
 	# For SlimServer 6.5 and later: conf file is "custom-convert.conf" in the plugin's folder.
 	# Write this .conf with sections for every client
 	# (because the convolver needs clientID as parameter)
@@ -755,7 +763,9 @@ sub initConfiguration
 		@origLines = <CONFIG>;
 		close( CONFIG );
 
-		my @revs = split /\./, $revision;
+		#my @revs = split /\./, $revision;
+
+		my @revs = split /\./, $myconfigrevision;
 		for( @origLines )
 		{
 			if( m/#$confBegin#rev\:(.*)#client\:(.*)#/i )
@@ -765,9 +775,15 @@ sub initConfiguration
 				{
 					my $vert = shift( @test ) || 0;
 					next if $vert == $ver;  # file is same version as me
-					last if $vert > $ver;  # file is later than me
-					debug ("Script version higher than config: " . $ver . " - " . $vert );
-					$upgradeReason = "Previous version $1 less than my $revision ($vert less than $ver)" unless $needUpgrade;
+					
+					# useful to force versions to be same.
+					# this step ignores templates that are lower than in the config. I think it is useful to ignore this so that we amend on any difference. 
+					# Although we should expect the number to incremented upwards. 
+					# last if $vert > $ver;  # file is later than me
+					# debug ("Script version higher than config: " . $ver . " - " . $vert );
+					debug ("Template version higher than config: " . $ver . " - " . $vert );
+					#$upgradeReason = "Previous version $1 less than my $revision ($vert less than $ver)" unless $needUpgrade;
+					$upgradeReason = "Previous version $1 less than my $myconfigrevision ($vert less than $ver)" unless $needUpgrade;
 					$needUpgrade = 1;
 					last;
 				}
@@ -838,7 +854,7 @@ sub initConfiguration
 
 	foreach my $clientID ( @foundClients )
 	{
-		print OUT "# #$confBegin#rev:$revision#client:$clientID# ***** BEGIN AUTOMATICALLY GENERATED SECTION - DO NOT EDIT ****\n";
+		print OUT "# #$confBegin#rev:$myconfigrevision#client:$clientID# ***** BEGIN AUTOMATICALLY GENERATED SECTION - DO NOT EDIT ****\n";
 
 		my $n = template( $clientID );
 		print OUT $n;
@@ -3698,158 +3714,13 @@ sub template
 
 =pod remove old squeeze versions pre 7.3
 =cut
+=pod templat definition moved into separate file
+=cut
 
 # added aac entry (jb)
 # deleted aap entry (jb)
 # replaced alc entry (jb)
 # added mp4 entry (jb)
 # added spt (spotty) (jb)
-sub template_WAV16
-{
-	return <<'EOF1';
-aac wav * $CLIENTID$
-	# IF
-	[faad] -q -w -f 1 $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-aif wav * $CLIENTID$
-	# FT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -be -wav -d 16
-
-alc wav * $CLIENTID$
-	# FT:{START=-j %s}U:{END=-e %u}
-	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-amb wav * $CLIENTID$
-	# IFT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -amb -d 16
-
-ape wav * $CLIENTID$
-	# F
-	[mac] $FILE$ - -d | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-flc wav * $CLIENTID$
-	# FT:{START=--skip=%t}U:{END=--until=%v}
-	[flac] -dcs $START$ $END$ -- $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-mov wav * $CLIENTID$
-	# FR
-	[mov123] $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -be -d 16
-
-mp3 wav * $CLIENTID$
-	# IFD:{RESAMPLE=--resample %D}
-	[lame] --mp3input --decode $RESAMPLE$ --silent $FILE$ - - | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-mp4 wav * $CLIENTID$
-	# FT:{START=-j %s}U:{END=-e %u}
-	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-mpc wav * $CLIENTID$
-	# IR
-	[mppdec] --silent --prev --gain 3 - - | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-ogg wav * $CLIENTID$
-	# IFD:{RESAMPLE=-r %D}
-	[sox] -t ogg $FILE$ -t wav $RESAMPLE$ -w - | [$CONVAPP$] -id "$CLIENTID$" -be -d 16
-
-spt flc * $CLIENTID$
-	# RT:{START=--start-position %s}
-	[spotty] -n Squeezebox -c "$CACHE$" --single-track $FILE$ --disable-discovery --disable-audio-cache $START$ | [sox]  -q -t raw -b 16 -e signed -c 2 -r 44.1k -L - -t wav  - | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-uhj wav * $CLIENTID$
-	# FT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -wav -d 16
-
-wav wav * $CLIENTID$
-	# FT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -wav -d 16
-
-wma wav * $CLIENTID$
-	# F:{PATH=%f}R:{PATH=%F}
-	[wmadec] -w $PATH$ | [$CONVAPP$] -id "$CLIENTID$" -d 16
-
-wvp wav * $CLIENTID$
-	# FT:{START=--skip=%t}U:{END=--until=%v}
-	[wvunpack] $FILE$ -wq $START$ $END$ -o - | [$CONVAPP$] -id "$CLIENTID$" -wav -d 16
-
-EOF1
-}
-
-
-# transcode for 24-bit FLAC output (sb2, sb3, transporter)
-# aac & mp4 added by jb
-# deleted aap entry - jb
-# replaced alc - jb
-# added spt (spotty) (jb)
-# changed FLAC compressions level to 0 (was 5)
-sub template_FLAC24
-{
-	return <<'EOF1';
-aac flc * $CLIENTID$
-	# IF
-	[faad] -q -w -f 1 $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-aif flc * $CLIENTID$
-	# FT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -be -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-alc flc * $CLIENTID$
-	# FT:{START=-j %s}U:{END=-e %u}
-	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs --totally-silent -0 --ignore-chunk-sizes -
-
-amb flc * $CLIENTID$
-	# IFT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -amb -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-ape flc * $CLIENTID$
-	# F
-	[mac] $FILE$ - -d | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-flc flc * $CLIENTID$
-	# FRI
-	[flac] -dcs --totally-silent $START$ $END$ -- $FILE$ |  [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-mov flc * $CLIENTID$
-	# FR
-	[mov123] $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -be -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-mp3 flc * $CLIENTID$
-	# IFD:{RESAMPLE=--resample %D}
-	[lame] --mp3input --decode $RESAMPLE$ --silent $FILE$ - - | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-mp4 flc * $CLIENTID$
-	# FT:{START=-j %s}U:{END=-e %u}
-	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs --totally-silent -0 --ignore-chunk-sizes -
-
-mpc flc * $CLIENTID$
-	# IR
-	[mppdec] --silent --prev --gain 3 - - | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-ogg flc * $CLIENTID$
-	# IFD:{RESAMPLE=-r %D}
-	[sox] -t ogg $FILE$ -t wav $RESAMPLE$ -w - | [$CONVAPP$] -id "$CLIENTID$" -be -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-spt flc * $CLIENTID$
-	# RT:{START=--start-position %s}
-	[spotty] -n Squeezebox -c "$CACHE$" --single-track $FILE$ --disable-discovery --disable-audio-cache $START$ | [sox]  -q -t raw -b 16 -e signed -c 2 -r 44.1k -L - -t wav  - | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent --ignore-chunk-sizes -
-
-uhj flc * $CLIENTID$
-	# FT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-wav flc * $CLIENTID$
-	# FT:{START=-skip %t}
-	[$CONVAPP$] -id "$CLIENTID$" -input $FILE$ $START$ -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-wma flc * $CLIENTID$
-	# F:{PATH=%f}R:{PATH=%F}
-	[wmadec] -w $PATH$ | [$CONVAPP$] -id "$CLIENTID$" -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-wvp flc * $CLIENTID$
-	# FT:{START=--skip=%t}U:{END=--until=%v}
-	[wvunpack] $FILE$ -wq $START$ $END$ -o - | [$CONVAPP$] -id "$CLIENTID$" -wav -wavo -d 24 | [flac] -cs -0 --totally-silent -
-
-EOF1
-}
-
 
 1;

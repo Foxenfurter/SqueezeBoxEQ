@@ -3,7 +3,7 @@
   <name>PLUGIN_INGUZEQ_DISPLAYNAME</name>
   <description>PLUGIN_INGUZEQ_MODULEDESC</description>
   <module>Plugins::InguzEQ::Plugin</module>
-  <version>0.9.38</version>
+  <version>0.9.39</version>
 
   <creator>Inguz Audio/Jonathan Fox</creator>
   <email></email>
