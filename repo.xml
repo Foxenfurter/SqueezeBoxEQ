@@ -14,7 +14,7 @@
     </plugin>	  
     <plugin name="InguzEQ" version="0.9.39" minTarget="7.3.0" maxTarget="*">
       <title lang="EN">SqueezeboxEQ</title>
-      <desc lang="EN">DSP for Squeezebox server based off InguzDSP</desc>
+      <desc lang="EN">DSP and EQ for Squeezebox server based off InguzDSP</desc>
       <url>https://github.com/Foxenfurter/SqueezeBoxEQ/raw/main/SqueezeboxEQ-0.9.39.zip</url>
       <sha>aa7addf843707b2bb40cde3e4eefde75f52da1a1</sha>
       <creator>Jonathan Fox</creator>
