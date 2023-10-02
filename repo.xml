@@ -6,7 +6,7 @@
   <plugins>
    <plugin name="SqueezeDSP" version="0.1.07a" minTarget="7.8.0" maxTarget="*">
       <title lang="EN">SqueezeDSP</title>
-      <desc lang="EN">DSP for Squeezebox server (Live version 0.1.07a) - provides EQ and DSP. Fixed Environment for MacOS</desc>	
+      <desc lang="EN">DSP for Squeezebox server (Live version 0.1.07a) - provides PEQ and DSP</desc>	
       <url>https://github.com/Foxenfurter/SqueezeDSP/raw/main/SqueezeDSP-0.1.07a.zip</url>
       <sha>57f162d94d40f30d2c044db75ac00a35ba9b9eae</sha>
       <creator>Jonathan Fox</creator>
