@@ -10,7 +10,8 @@
       <url>https://github.com/Foxenfurter/SqueezeDSP/raw/main/SqueezeDSP-0.1.07a.zip</url>
       <sha>57f162d94d40f30d2c044db75ac00a35ba9b9eae</sha>
       <creator>Jonathan Fox</creator>
-     <changes>Initial version now working on Mac</changes>
+      <changes>Initial version now working on Mac</changes>
+      <info>https://github.com/Foxenfurter/SqueezeDSP/blob/main/README.md</info>
     </plugin>	  
     <plugin name="InguzEQ" version="0.9.39" minTarget="7.3.0" maxTarget="*">
       <title lang="EN">SqueezeboxEQ</title>
