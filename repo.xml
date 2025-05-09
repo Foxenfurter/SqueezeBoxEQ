@@ -4,12 +4,11 @@
     <title lang="EN">Foxenfurters Squeezebox plugins</title>
   </details>
   <plugins>
-    <plugin name="SqueezeDSP" version="0.1.11d" minTarget="7.8.0" maxTarget="*">
+     <plugin name="SqueezeDSP" version="0.1.20e" minTarget="7.8.0" maxTarget="*">
       <title lang="EN">SqueezeDSP</title>
-      <desc lang="EN">DSP for Squeezebox server version 0.1.11d) - provides EQ and DSP. Number of small tweaks </desc>
-
-      <url>https://github.com/Foxenfurter/SqueezeDSP/raw/main/SqueezeDSP-0.1.11d.zip</url>
-      <sha>aafbaa1e26cd193053fc9a11f1e73f626e5f25c2</sha>
+      <desc lang="EN">DSP for Squeezebox server version (0.1.20e) - provides EQ and DSP.</desc>
+      <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.20e/SqueezeDSP-0.1.20e.zip</url>
+      <sha>3b365719e8c511398fa9f9dc58fb9726b05bee93</sha>
       <creator>Jonathan Fox</creator>
       <sha1-tool>https://emn178.github.io/online-tools/sha1_checksum.html</sha1-tool>
       <changes>enhanced binary compilation, improved impulse resampler normaliser with caching. Experimental OSX Arm64 native binary, impulse and temp folder now writable</changes>
