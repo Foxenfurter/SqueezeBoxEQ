@@ -4,7 +4,7 @@
     <title lang="EN">Foxenfurters Squeezebox plugins</title>
   </details>
  <plugins>
-      <plugin name="SqueezeDSP" version="0.1.24" minTarget="7.8.0" maxTarget="*">
+      <plugin name="SqueezeDSP" version="0.1.25" minTarget="7.8.0" maxTarget="*">
       <title lang="EN">SqueezeDSP</title>
       <desc lang="EN">DSP for Lyrion Music Server (version 0.1.25) - provides EQ and DSP.</desc>
       <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.25/SqueezeDSP-0.1.25.zip</url>
