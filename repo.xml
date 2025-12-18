@@ -4,12 +4,12 @@
     <title lang="EN">Foxenfurters Squeezebox plugins</title>
   </details>
     <plugins>
-      <plugin name="SqueezeDSP" version="0.1.40" minTarget="7.8.0" maxTarget="*">
+      <plugin name="SqueezeDSP" version="0.1.41" minTarget="7.8.0" maxTarget="*">
       <title lang="EN">SqueezeDSP</title>
       <desc lang="EN">DSP for Lyrion Music Server - provides EQ and DSP.</desc>
-     <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.40/SqueezeDSP-0.1.40.zip</url>
-	  <sha>a3c7b929bf7fb82b32cba5d8ba165462d1ca1b1a</sha>
-	  <changes>Added new Visualiser for Loudness and PEQ Settings</changes>
+     <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.41/SqueezeDSP-0.1.41.zip</url>
+	  <sha>ea11462d2074f69750238cc256e1e758faa6470e</sha>
+	  <changes>large number of tweaks to styling, scales better to small screens</changes>
       <creator>Jonathan Fox</creator>
 	  <icon>https://raw.githubusercontent.com/Foxenfurter/SqueezeDSP/refs/heads/main/SqueezeDSP/HTML/EN/plugins/SqueezeDSP/images/squeezedsp-blu.png</icon>
 	  <category>tools</category>
