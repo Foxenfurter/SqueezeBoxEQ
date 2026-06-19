@@ -6,8 +6,7 @@
     <plugins>
       <plugin name="SqueezeDSP" version="0.1.71" minTarget="7.8.0" maxTarget="*">
       <title lang="EN">SqueezeDSP</title>
-     
-     <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.71/SqueezeDSP-0.1.71.zip</url>
+	  <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.71/SqueezeDSP-0.1.71.zip</url>
 	  <sha>ce042dd693370f4467f02491f9741a1c87a92a79</sha>
 	  <changes>Direct Encoding of MP3 and Flac, simplified conversion rules, downsamples to match player, caches track gain</changes>
 	   <desc lang="EN">DSP for Lyrion Music Server - provides EQ and DSP.</desc>
