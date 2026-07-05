@@ -4,11 +4,11 @@
     <title lang="EN">Foxenfurters Squeezebox plugins</title>
   </details>
     <plugins>
-      <plugin name="SqueezeDSP" version="0.1.71" minTarget="7.8.0" maxTarget="*">
-      <title lang="EN">SqueezeDSP</title>
-	  <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.71/SqueezeDSP-0.1.71.zip</url>
-	  <sha>ce042dd693370f4467f02491f9741a1c87a92a79</sha>
-	  <changes>Direct Encoding of MP3 and Flac, simplified conversion rules, downsamples to match player, caches track gain</changes>
+<plugin name="SqueezeDSP" version="0.1.72" minTarget="7.8.0" maxTarget="*">
+      <title lang="EN">SqueezeDSP</title>     
+     <url>https://github.com/Foxenfurter/SqueezeDSP/releases/download/v0.1.72/SqueezeDSP-0.1.72.zip</url>
+	  <sha>cb8c84898394e35d69d92c23296da489b9f2744e</sha>
+	  <changes>Added conversion for SpotOn, added back wav conversion for legacy players, dsd converts to 24 bit, preset menu - allows deletion of presets</changes>
 	   <desc lang="EN">DSP for Lyrion Music Server - provides EQ and DSP.</desc>
       <creator>Jonathan Fox</creator>
 	  <icon>https://raw.githubusercontent.com/Foxenfurter/SqueezeDSP/refs/heads/main/SqueezeDSP/HTML/EN/plugins/SqueezeDSP/images/squeezedsp-blu.png</icon>
